@@ -5,31 +5,47 @@ interface IEncryptor {
     fun decode(line: String): String
 }
 
-class CezareWithKeyWord: IEncryptor {
-    override fun encode(line: String): String = "Cezare with keyword encode"
-    override fun decode(line: String): String = "Cezare with keyword decode"
+class CezareWithKeyWord(alphabet: String, offset: Int, keyword: String): IEncryptor {
+    private val alphabet = alphabet
+    private val table: String
+    init {
+        val alphabet_without_keyword_chars = alphabet.filterNot { it in keyword }
+        this.table = alphabet_without_keyword_chars.drop(alphabet_without_keyword_chars.length - offset) + keyword + alphabet_without_keyword_chars.dropLast(offset)
+    }
+    override fun encode(line: String): String {
+        val encoded_line = line.map {
+            this.get_char_by_table(it, this.table, this.alphabet)
+        }.joinToString("")
+
+        return encoded_line
+    } 
+
+    override fun decode(line: String): String {
+        val decoded_line = line.map {
+            this.get_char_by_table(it, this.alphabet, this.table)
+        }.joinToString("")
+
+        return decoded_line
+    }
+
+    private fun get_char_by_table(char: Char, from: String, by: String): Char =
+        from[by.indexOf(char)]
 }
 
 class Scytale(row_count: Int): IEncryptor {
-    val row_count = row_count
-    // var col_count: Int? = null
+    private val row_count = row_count
 
     override fun encode(line: String): String {
         val col_count = (line.length - 1) / this.row_count + 1
-        println("col count: $col_count")
         val table = this.create_encode_table(line, col_count)
-        this.print_table(table)
-        println("---------------")
-
         val cols = this.transpose(table)
+
         return cols.map { it.joinToString("") }.joinToString("")
     }
 
     override fun decode(line: String): String {
         val col_count = (line.length - 1) / this.row_count + 1
         val table = this.create_decode_table(line, col_count)
-
-        this.print_table(table)
         
         return table.map { it.joinToString("") }.joinToString("")
     }
@@ -54,25 +70,13 @@ class Scytale(row_count: Int): IEncryptor {
     }
 
     private fun create_decode_table(line: String, col_count: Int): Array<Array<String>> {
-        println("line size: ${line.length}")
-        line.forEachIndexed { i, _ ->
-            print("$i |")
-        }
-        println("")
-        line.forEach {
-            print("$it |")
-        }
-        println("-----------------")
         val table = Array(this.row_count) { row ->
-            val tmp = Array<String>(col_count) { col ->
+            Array<String>(col_count) { col ->
                 val i = row + col * row_count
-                // println("i $i")
                 line[i].toString()
             }
-            println(tmp.contentToString())
-            tmp
         }
-        println("-----------------")
+
         return table
     }
 
