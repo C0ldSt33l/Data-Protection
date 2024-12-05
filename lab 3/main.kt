@@ -1,14 +1,18 @@
 // import kotlin.test.*
+package lab3
 
 class Playflay(
-    val alphabet: String,
+    var alphabet: String,
     val row_count: Int, // 5
     val col_count: Int, // 8
-    val keyword: String // ПРЕФЕКТУРА
+    var keyword: String // ПРЕФЕКТУРА
 ) {
     val table = Array(row_count * col_count) { '_' }
 
     init {
+        this.alphabet = this.alphabet.uppercase()
+        this.keyword = this.keyword.uppercase()
+
         println("alphabet size: ${this.alphabet.length}")
         val keyword_without_duplicate = this.keyword.toCharArray().distinct().joinToString("")
         for ((i, char) in keyword_without_duplicate.withIndex()) {
@@ -27,10 +31,13 @@ class Playflay(
     }
 
     fun encode(text: String): String {
+        val text = text.uppercase()
         var encoded = ""
         for (bigramm in this.get_bigramms(text)) {
             val first_coords = this.get_char_coord(bigramm.first())
             val second_coords = this.get_char_coord(bigramm.last())
+
+            if (first_coords == null || second_coords == null) continue
 
             if (first_coords.first == second_coords.first) {
                 encoded += this.get_char_by_coords(Pair(first_coords.first, (first_coords.second + 1) % row_count))
@@ -51,10 +58,12 @@ class Playflay(
     }
 
     fun decode(text: String): String {
+        val text = text.uppercase()
         var decoded = ""
         for (bigramm in this.get_bigramms(text)) {
             val first_coords = this.get_char_coord(bigramm.first())
             val second_coords = this.get_char_coord(bigramm.last())
+            if (first_coords == null || second_coords == null) continue
 
             if (first_coords.first == second_coords.first) {
                 decoded += this.get_char_by_coords(Pair(first_coords.first, if (first_coords.second - 1 < 0) row_count - 1 else first_coords.second - 1))
@@ -79,8 +88,9 @@ class Playflay(
         return this.table[i]
     }
 
-    private fun get_char_coord(char: Char): Pair<Int, Int> {
+    private fun get_char_coord(char: Char): Pair<Int, Int>? {
         val i = this.table.indexOf(char)
+        if (i < 0) return null
         return Pair(i % col_count, i / col_count)
     }
 
@@ -89,12 +99,8 @@ class Playflay(
         var i = 0
         while (i < text.length) {
             var bigramm = if (i == text.length - 1) text.slice(i..i) else text.slice(i..i+1)
-            // println(bigramm)
             if (bigramm.length == 2 && bigramm.first() == bigramm.last()) {
-                // println("work")
-                // println(bigramm)
                 bigramm = bigramm.first() + "-"
-                // println(bigramm)
                 bigramms.add(bigramm)
                 
                 i += 1
@@ -120,16 +126,22 @@ class Playflay(
         println("\n-------------------\n")
     }
 }
-fun main() {
-    val shifr = Playflay(
-        "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ .,-:!?",
-        5, 8,
-        "ПРЕФЕКТУРА"
-    )
 
-    val text = "ВО ВРЕМЯ ПЕРВОЙ МИРОВОЙ ВОЙНЫ ИСПОЛЬЗОВАЛИСЬ БИГРАММНЫЕ ШИФРЫ"
-    val encoded = shifr.encode(text)
-    println(encoded)
-    val decoded = shifr.decode(encoded)
-    println(decoded)
+
+fun main() {
+    // val shifr = Playflay(
+    //     "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ .,-:!?",
+    //     5, 8,
+    //     "ПРЕФЕКТУРА"
+    // )
+
+    // val text = "ВО ВРЕМЯ ПЕРВОЙ МИРОВОЙ ВОЙНЫ ИСПОЛЬЗОВАЛИСЬ БИГРАММНЫЕ ШИФРЫ"
+    // println(text)
+    // val encoded = shifr.encode(text)
+    // println(encoded)
+    // val decoded = shifr.decode(encoded)
+    // println(decoded)
+
+    // println("ara".get_bigramms().joinToString(","))
+    Test().run()
 }
